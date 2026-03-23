@@ -1,2 +1,0 @@
-# AutoHotKeyScript
-AutoHotkey script 
