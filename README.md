@@ -1,151 +1,119 @@
-# AutoHotkey IT Workflow + Homelab Roadmap
+# IT-Workflow
 
-Windows automation for IT support workflows and a future homelab automation journey.
+Windows automation for day-to-day IT support tasks with AutoHotkey v2.
 
-This repository currently contains an [AutoHotkey v2 script](./script/AutoHotKey_Script%201.ahk) for day-to-day IT support tasks. It speeds up repeated ticket responses, opens the tools needed at the start of the day, and creates a dated note folder for quick documentation. It also serves as the starting point for a broader homelab and infrastructure automation path.
+The main entrypoint is [script/IT-Workflow.ahk](./script/IT-Workflow.ahk). It loads workstation-specific settings from layered INI files, registers hotstrings, and runs a hardened `Ctrl+L` startup workflow that creates your daily notes folder and launches your support tools.
 
-## Overview
+## What It Does
 
-This project is built around small, useful automations that remove repetitive work from a Windows-based IT workflow.
+- Expands common support replies with hotstrings
+- Creates a dated notes folder on `Ctrl+L`
+- Creates a `note.txt` file only when missing
+- Opens File Explorer, the note file, and your configured support tools
+- Writes a local log for startup actions and failures
 
-Today the repo is focused on:
+## Repo Layout
 
-- Faster text responses for recurring support situations
-- A startup hotkey for opening core support tools
-- Automatic creation of a dated work-notes folder
-- A practical foundation for future homelab documentation and automation
-
-## What It Does Today
-
-The current script includes:
-
-- Hotstrings for common support replies such as review/close, voicemail follow-up, and no-user-response closure
-- A `Ctrl+L` startup workflow that creates a folder named with the current date
-- Automatic creation of a `note.txt` file inside that daily folder
-- Launching tools such as File Explorer, Outlook, a ticketing URL, LabTech, OneNote, 3CX, and Notepad
+```text
+README.md
+script/
+  IT-Workflow.ahk
+  main.ahk
+  hotstrings.ahk
+  startup.ahk
+  config.example.ini
+  lib/
+    config.ahk
+    logging.ahk
+```
 
 ## Requirements
 
 - Windows
 - AutoHotkey v2
-- Local app paths and URLs customized for your environment
+- Full executable paths for the apps you want to launch
+- A valid ticketing URL
 
-This script is environment-specific by design, so expect to edit paths before using it on another machine.
-
-## Quick Start
+## Installation
 
 1. Install AutoHotkey v2 on Windows.
 2. Clone or download this repository.
-3. Open [script/AutoHotKey_Script 1.ahk](./script/AutoHotKey_Script%201.ahk) in a text editor.
-4. Replace the hardcoded paths and URLs with your own values.
-5. Run the script with AutoHotkey.
-6. Test the hotstrings and press `Ctrl+L` to verify the startup workflow.
+3. Copy `script/config.example.ini` to `script/config.local.ini`.
+4. Fill in your local paths and URL in `script/config.local.ini`.
+5. Run `script/IT-Workflow.ahk` with AutoHotkey.
+6. Test the hotstrings, then press `Ctrl+L` to verify the startup workflow.
 
-## Configuration Notes
+## Sample Config
 
-Before using the script on your own system, replace personal or company-specific values with your local paths and tools.
+`config.example.ini` is intentionally incomplete so workstation-specific values stay out of git. Start from a local copy like this:
 
-Current repo layout:
+```ini
+[paths]
+notes_root=C:\Users\YourUser\OneDrive - YourOrg\Desktop\Capture
+outlook=C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE
+labtech=C:\Program Files (x86)\LabTech Client\LTClient.exe
+onenote=C:\Program Files (x86)\Microsoft Office\root\Office16\ONENOTE.EXE
+softphone=C:\Users\YourUser\AppData\Local\Programs\3CXDesktopApp\3CXDesktopApp.exe
 
-```text
-README.md
-script/
-  AutoHotKey_Script 1.ahk
-  AutoHotKey2.txt
-  DailyUseScript.txt
+[urls]
+ticket=https://your-ticketing-system.example
+
+[settings]
+date_format=yy-MM-dd
+note_filename=note.txt
+log_dir=.\logs
 ```
 
-Use placeholders like these when adapting the script:
+## How Startup Works
 
-```text
-Notes folder: C:\Path\To\Notes\YY-MM-DD
-Ticketing URL: https://your-ticketing-system.example
-Remote support tool: C:\Program Files\YourTool\Tool.exe
-Softphone: C:\Users\YourUser\AppData\Local\Programs\YourPhoneApp\Phone.exe
-```
+When you press `Ctrl+L`, the script:
 
-Recommended cleanup for the next revision of the script:
+1. Builds a folder name from the current date.
+2. Creates the notes root and daily folder only if they do not already exist.
+3. Creates `note.txt` only if it is missing.
+4. Validates each configured app path before launching it.
+5. Validates the ticket URL before opening it.
+6. Continues launching valid targets even if one target fails.
+7. Shows one summary message at the end if anything failed.
 
-- Rename the script file to remove spaces
-- Move all user paths to a small config section at the top
-- Add comments in English or bilingual EN/FR for easier sharing
-- Separate work-specific automation from personal lab automation as the repo grows
+The log file is written to `script/logs/IT-Workflow.log` by default.
 
-## Example Automations
+## Troubleshooting
 
-Hotstring example:
+If `Ctrl+L` does nothing:
 
-```ahk
-::manque de suivi::Manque de suivi de l'utilisateur, fermeture du ticket.
-```
+- Confirm you are running `script/IT-Workflow.ahk` with AutoHotkey v2.
+- Check `script/config.local.ini` for blank required values.
+- Open `script/logs/IT-Workflow.log` for startup details.
 
-This expands a short trigger into a full support response so repeated ticket handling is faster and more consistent.
+If an app does not launch:
 
-Startup workflow example:
+- Use a full executable path in `config.local.ini`.
+- Verify the file exists on disk.
+- Check the log for the exact missing path that was skipped.
 
-```ahk
-^l::
-{
-    TimeString := FormatTime(,"yy-MM-dd")
-    todayPath := "C:\Path\To\Notes\" TimeString
-    todayNote := todayPath "\note.txt"
+If the ticket page does not open:
 
-    DirCreate todayPath
-    FileAppend TimeString, todayNote
+- Make sure the URL starts with `http://` or `https://`.
+- Check the startup summary message and the log for the invalid value.
 
-    Run "explorer.exe " todayPath
-    Run "outlook.exe"
-    Run "https://your-ticketing-system.example"
-    Run "notepad.exe " todayNote
-}
-```
+If the notes folder is not created:
 
-This pattern is a good base for building a repeatable IT morning routine.
+- Confirm `paths.notes_root` points to a writable folder location.
+- Check whether OneDrive or another sync tool changed the local path.
 
-## Future Homelab Roadmap
+## Customize For Another Workstation
 
-The next step is to grow this repo from workstation automation into a documented homelab journey.
+- Keep `script/config.example.ini` as the shared template.
+- Create a different `script/config.local.ini` on each workstation.
+- Update only the local file when usernames, install locations, or URLs differ.
+- Leave the script logic unchanged unless the workflow itself changes.
 
-Planned hardware roles:
+## Later
 
-- Old PC: primary lab host
-- Switch: network segmentation and future VLAN practice
-- Laptop 1: admin workstation
-- Laptop 2: testing workstation
-- Laptop 3: client/device simulation
+Packaging is intentionally out of scope for this pass. Future work can add:
 
-```mermaid
-flowchart LR
-    Admin["Admin Laptop"] --> Switch["Switch"]
-    Test["Testing Laptop"] --> Switch
-    Client["Client Laptop"] --> Switch
-    Switch --> Host["Old PC / Lab Host"]
-    Host --> PVE["Proxmox VE"]
-    PVE --> Infra["Infra Services"]
-    PVE --> Mon["Monitoring Stack"]
-```
-
-Planned phases:
-
-- Phase 1: install Proxmox VE on the old PC and document the base network and storage layout
-- Phase 2: use the switch for cleaner network separation and hands-on segmentation practice
-- Phase 3: add secure remote access with Tailscale instead of exposing services directly
-- Phase 4: manage hosts and repeatable setup with Ansible inventory and playbooks
-- Phase 5: add Prometheus and Grafana-based monitoring for Windows systems and lab services
-- Phase 6: evaluate self-hosted apps from `awesome-selfhosted` based on real lab needs
-
-Useful references for future implementation:
-
-- [Proxmox VE](https://www.proxmox.com/en/products/proxmox-virtual-environment/overview)
-- [Tailscale subnet routers](https://tailscale.com/docs/features/subnet-routers)
-- [Ansible getting started](https://docs.ansible.com/projects/ansible/4/user_guide/intro_getting_started.html)
-- [Prometheus getting started](https://prometheus.io/docs/tutorials/getting_started/)
-- [Grafana Windows monitoring](https://grafana.com/docs/grafana-cloud/monitor-infrastructure/integrations/integration-reference/integration-windows-exporter/)
-- [awesome-selfhosted](https://github.com/awesome-selfhosted/awesome-selfhosted)
-
-## Next Improvements
-
-- Add a small config block so paths and URLs can be changed without editing workflow logic
-- Split hotstrings, startup automation, and future lab utilities into separate script files
-- Add screenshots or a short GIF once the workflow is stable
-- Create a `docs/` folder later for deeper homelab build notes, network diagrams, and service decisions
+- Compiled AutoHotkey builds if needed
+- Version numbers
+- A changelog
+- GitHub releases
