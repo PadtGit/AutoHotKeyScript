@@ -2,7 +2,7 @@
 
 Windows automation for IT support workflows and a future homelab automation journey.
 
-This repository currently contains an [AutoHotkey v2 script](./AutoHotKey_Script%201.ahk) for day-to-day IT support tasks. It speeds up repeated ticket responses, opens the tools needed at the start of the day, and creates a dated note folder for quick documentation. It also serves as the starting point for a broader homelab and infrastructure automation path.
+This repository currently contains an [AutoHotkey v2 script](./script/AutoHotKey_Script%201.ahk) for day-to-day IT support tasks. It speeds up repeated ticket responses, opens the tools needed at the start of the day, and creates a dated note folder for quick documentation. It also serves as the starting point for a broader homelab and infrastructure automation path.
 
 ## Overview
 
@@ -36,7 +36,7 @@ This script is environment-specific by design, so expect to edit paths before us
 
 1. Install AutoHotkey v2 on Windows.
 2. Clone or download this repository.
-3. Open [AutoHotKey_Script 1.ahk](./AutoHotKey_Script%201.ahk) in a text editor.
+3. Open [script/AutoHotKey_Script 1.ahk](./script/AutoHotKey_Script%201.ahk) in a text editor.
 4. Replace the hardcoded paths and URLs with your own values.
 5. Run the script with AutoHotkey.
 6. Test the hotstrings and press `Ctrl+L` to verify the startup workflow.
@@ -44,6 +44,16 @@ This script is environment-specific by design, so expect to edit paths before us
 ## Configuration Notes
 
 Before using the script on your own system, replace personal or company-specific values with your local paths and tools.
+
+Current repo layout:
+
+```text
+README.md
+script/
+  AutoHotKey_Script 1.ahk
+  AutoHotKey2.txt
+  DailyUseScript.txt
+```
 
 Use placeholders like these when adapting the script:
 
